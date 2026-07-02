@@ -45,6 +45,7 @@ func (a *IndexController) initRouter(g *gin.RouterGroup) {
 
 	g.POST("/login", middleware.CSRFMiddleware(), a.login)
 	g.POST("/logout", middleware.CSRFMiddleware(), a.logout)
+	g.GET("/getTwoFactorEnable", a.getTwoFactorEnable)
 	g.POST("/getTwoFactorEnable", middleware.CSRFMiddleware(), a.getTwoFactorEnable)
 }
 

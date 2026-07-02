@@ -9,7 +9,6 @@ import {
   Menu,
   Popover,
   Space,
-  Spin,
   message,
 } from 'antd';
 import {
@@ -44,7 +43,6 @@ export default function LoginPage() {
     setMessageInstance(messageApi);
   }, [messageApi]);
 
-  const [fetched, setFetched] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [twoFactorEnable, setTwoFactorEnable] = useState(false);
   const [headlineIndex, setHeadlineIndex] = useState(0);
@@ -65,10 +63,9 @@ export default function LoginPage() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const msg = await HttpUtil.post('/getTwoFactorEnable');
+      const msg = await HttpUtil.get('/getTwoFactorEnable', undefined, { silent: true });
       if (cancelled) return;
       if (msg.success) setTwoFactorEnable(!!msg.obj);
-      setFetched(true);
     })();
     return () => { cancelled = true; };
   }, []);
@@ -166,82 +163,76 @@ export default function LoginPage() {
           </div>
 
           <div className="login-wrapper">
-            {!fetched ? (
-              <div className="login-loading">
-                <Spin size="large" />
+            <div className="login-card">
+              <div className="brand">
+                <span className="brand-name">3X-UI</span>
+                <span className="brand-accent" aria-hidden="true" />
               </div>
-            ) : (
-              <div className="login-card">
-                <div className="brand">
-                  <span className="brand-name">3X-UI</span>
-                  <span className="brand-accent" aria-hidden="true" />
-                </div>
-                <h2 className="welcome">
-                  <b key={headlineIndex}>{headlineWords[headlineIndex]}</b>
-                </h2>
+              <h2 className="welcome">
+                <b key={headlineIndex}>{headlineWords[headlineIndex]}</b>
+              </h2>
 
-                <Form
-                  layout="vertical"
-                  className="login-form"
-                  onFinish={onSubmit}
-                  initialValues={{ username: '', password: '', twoFactorCode: '' }}
+              <Form
+                layout="vertical"
+                className="login-form"
+                onFinish={onSubmit}
+                initialValues={{ username: '', password: '', twoFactorCode: '' }}
+              >
+                <Form.Item
+                  label={t('username')}
+                  name="username"
+                  rules={[antdRule(LoginFormSchema.shape.username, t)]}
                 >
+                  <Input
+                    prefix={<UserOutlined />}
+                    autoComplete="username"
+                    size="large"
+                    placeholder={t('username')}
+                    autoFocus
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  label={t('password')}
+                  name="password"
+                  rules={[antdRule(LoginFormSchema.shape.password, t)]}
+                >
+                  <Input.Password
+                    prefix={<LockOutlined />}
+                    autoComplete="current-password"
+                    size="large"
+                    placeholder={t('password')}
+                  />
+                </Form.Item>
+
+                {twoFactorEnable && (
                   <Form.Item
-                    label={t('username')}
-                    name="username"
-                    rules={[antdRule(LoginFormSchema.shape.username, t)]}
+                    label={t('twoFactorCode')}
+                    name="twoFactorCode"
+                    rules={[antdRule(TwoFactorCodeSchema, t)]}
                   >
                     <Input
-                      prefix={<UserOutlined />}
-                      autoComplete="username"
+                      prefix={<KeyOutlined />}
+                      autoComplete="one-time-code"
                       size="large"
-                      placeholder={t('username')}
-                      autoFocus
+                      placeholder={t('twoFactorCode')}
                     />
                   </Form.Item>
+                )}
 
-                  <Form.Item
-                    label={t('password')}
-                    name="password"
-                    rules={[antdRule(LoginFormSchema.shape.password, t)]}
+                <Form.Item className="submit-row">
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    loading={submitting}
+                    size="large"
+                    block
                   >
-                    <Input.Password
-                      prefix={<LockOutlined />}
-                      autoComplete="current-password"
-                      size="large"
-                      placeholder={t('password')}
-                    />
-                  </Form.Item>
-
-                  {twoFactorEnable && (
-                    <Form.Item
-                      label={t('twoFactorCode')}
-                      name="twoFactorCode"
-                      rules={[antdRule(TwoFactorCodeSchema, t)]}
-                    >
-                      <Input
-                        prefix={<KeyOutlined />}
-                        autoComplete="one-time-code"
-                        size="large"
-                        placeholder={t('twoFactorCode')}
-                      />
-                    </Form.Item>
-                  )}
-
-                  <Form.Item className="submit-row">
-                    <Button
-                      type="primary"
-                      htmlType="submit"
-                      loading={submitting}
-                      size="large"
-                      block
-                    >
-                      {t('login')}
-                    </Button>
-                  </Form.Item>
-                </Form>
-              </div>
-            )}
+                    {t('login')}
+                  </Button>
+                </Form.Item>
+              </Form>
+            </div>
           </div>
         </Layout.Content>
       </Layout>
